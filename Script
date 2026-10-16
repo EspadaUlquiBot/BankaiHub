@@ -1,6 +1,14 @@
-local Player = game.Players.LocalPlayer
-local Character = Player.Character or Player.CharacterAdded:Wait()
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-Character.Humanoid.WalkSpeed = 100
+print("Script lancé ! Activation de la super vitesse...")
 
-print("Vitesse modifiée à 100 avec succès !")
+-- On lance une tâche en arrière-plan
+task.spawn(function()
+    while task.wait(0.05) do -- S'exécute toutes les 0.05 secondes
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            -- On force la vitesse en boucle pour empêcher le jeu de la remettre à 16
+            LocalPlayer.Character.Humanoid.WalkSpeed = 100
+        end
+    end
+end)

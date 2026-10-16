@@ -1,0 +1,6 @@
+local Player = game.Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+
+Character.Humanoid.WalkSpeed = 100
+
+print("Vitesse modifiée à 100 avec succès !")

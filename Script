@@ -1,14 +1,59 @@
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local CollectionService = game:GetService("CollectionService")
+
 local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local RootPart = Character:WaitForChild("HumanoidRootPart")
+local Humanoid = Character:WaitForChild("Humanoid")
 
-print("Script lancé ! Activation de la super vitesse...")
+-- ==========================================
+-- CONFIGURATION
+-- ==========================================
+local Config = {
+    FlyHeight = 45,         -- Hauteur de vol (studs)
+    AttackRange = 30,       -- Rayon du Multi-Hit (studs)
+    MaxHitsPerTick = 10,    -- Nombre max d'ennemis touchés par tick
+    DamagePerHit = 50,      -- Dégâts infligés à chaque titan touché
+    FlySpeed = 20,          -- Vitesse de déplacement en vol (studs/sec)
+    AutoAttackDelay = 0.5,  -- Délai entre deux vagues d'attaques (secondes)
+    TitanTag = "Titan"      -- Le nom de la propriété 'Tag' des titans dans Roblox
+}
 
--- On lance une tâche en arrière-plan
-task.spawn(function()
-    while task.wait(0.05) do -- S'exécute toutes les 0.05 secondes
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            -- On force la vitesse en boucle pour empêcher le jeu de la remettre à 16
-            LocalPlayer.Character.Humanoid.WalkSpeed = 100
+-- ==========================================
+-- VARIABLES D'ÉTAT
+-- ==========================================
+local isFlying = false
+local targetPosition = RootPart.Position + Vector3.new(0, Config.FlyHeight, 0)
+local lastAttackTime = 0
+
+-- ==========================================
+-- FONCTIONS UTILITAIRES
+-- ==========================================
+
+-- Fonction pour vérifier si un objet a le tag "Titan" (ou le nom que tu préfères)
+local function isTitan(obj)
+    return obj:IsA("Model") and (obj.Name == Config.TitanTag or CollectionService:HasTag(obj, Config.TitanTag))
+end
+
+-- ==========================================
+-- BOUCLE PRINCIPALE (RUN SERVICE)
+-- ==========================================
+RunService.Heartbeat:Connect(function(dt) -- dt = delta time pour la fluidité
+
+    if isFlying then
+        -- 1. LOGIQUE DE VOL
+        local targetY = Config.FlyHeight
+        local currentY = RootPart.Position.Y
+
+        -- Montée ou descente douce vers la hauteur cible
+        if math.abs(currentY - targetY) > 0.5 then
+            local direction = (targetY > currentY and 1 or -1) * Config.FlySpeed * dt
+            RootPart.CFrame *= CFrame.new(0, direction * dt, 0)
         end
-    end
-end)
+
+        -- 2. LOGIQUE D'ATTAQUE AUTOMATIQUE
+        local currentTime = tick()
+
+        if currentTime - lastAttackTime >= Config.Auto
